@@ -23,7 +23,9 @@ import java.util.Collection;
 import org.apache.sling.repoinit.parser.operations.AclLine;
 import org.apache.sling.repoinit.parser.operations.CreatePath;
 import org.apache.sling.repoinit.parser.operations.CreateServiceUser;
+import org.apache.sling.repoinit.parser.operations.CreateUser;
 import org.apache.sling.repoinit.parser.operations.DeleteServiceUser;
+import org.apache.sling.repoinit.parser.operations.DeleteUser;
 import org.apache.sling.repoinit.parser.operations.RegisterNodetypes;
 import org.apache.sling.repoinit.parser.operations.OperationVisitor;
 import org.apache.sling.repoinit.parser.operations.RegisterNamespace;
@@ -49,6 +51,24 @@ class OperationToStringVisitor implements OperationVisitor {
     @Override
     public void visitDeleteServiceUser(DeleteServiceUser s) {
         out.println(s.toString());
+    }
+
+    @Override
+    public void visitCreateUser(CreateUser u) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(u.toString());
+        if(u.getPassword() != null) {
+            sb.append(", password=").append(u.getPassword());
+        }
+        if(u.getPasswordEncoding() != null) {
+            sb.append(", passwordEncoding=").append(u.getPasswordEncoding());
+        }
+        out.println(sb.toString());
+    }
+
+    @Override
+    public void visitDeleteUser(DeleteUser u) {
+        out.println(u.toString());
     }
 
     @Override

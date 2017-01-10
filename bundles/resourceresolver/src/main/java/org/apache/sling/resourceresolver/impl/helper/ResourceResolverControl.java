@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -47,12 +48,13 @@ import org.apache.sling.api.resource.SyntheticResource;
 import org.apache.sling.api.resource.ValueMap;
 import org.apache.sling.api.resource.path.PathBuilder;
 import org.apache.sling.resourceresolver.impl.providers.ResourceProviderHandler;
-import org.apache.sling.resourceresolver.impl.providers.ResourceProviderInfo;
 import org.apache.sling.resourceresolver.impl.providers.ResourceProviderStorage;
 import org.apache.sling.resourceresolver.impl.providers.ResourceProviderStorageProvider;
 import org.apache.sling.resourceresolver.impl.providers.stateful.AuthenticatedResourceProvider;
 import org.apache.sling.resourceresolver.impl.providers.tree.Node;
 import org.apache.sling.spi.resource.provider.ResourceProvider;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -684,7 +686,6 @@ public class ResourceResolverControl {
         }
     }
 
-    @SuppressWarnings("deprecation")
     private ResourceResolver getResourceTypeResourceResolver(
             final ResourceResolverFactory factory,
             final ResourceResolver resolver) {
@@ -693,9 +694,15 @@ public class ResourceResolverControl {
         } else {
             if ( this.resourceTypeResourceResolver == null ) {
                 try {
-                    this.resourceTypeResourceResolver = factory.getAdministrativeResourceResolver(null);
+                    // make sure we're getting the resourceTypeResourceResolver on behalf of
+                    // the resourceresolver bundle
+                    final Bundle bundle = FrameworkUtil.getBundle(ResourceResolverControl.class);
+                    final Map<String, Object> authenticationInfo = new HashMap<String, Object>();
+                    authenticationInfo.put(ResourceProvider.AUTH_SERVICE_BUNDLE, bundle);
+                    authenticationInfo.put(ResourceResolverFactory.SUBSERVICE, "read");
+                    this.resourceTypeResourceResolver = factory.getServiceResourceResolver(authenticationInfo);
                 } catch (final LoginException e) {
-                    // we simply ignore this and return null
+                    throw new IllegalStateException("Failed to create resource-type ResourceResolver", e);
                 }
             }
             return this.resourceTypeResourceResolver;

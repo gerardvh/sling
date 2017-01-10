@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.sling</groupId>
     <artifactId>sling</artifactId>
-    <version>28</version>
+    <version>29</version>
     <relativePath/>
   </parent>
 
@@ -36,10 +36,10 @@
   <description>Apache Sling Features for provisioning with Apache Karaf</description>
 
   <properties>
-    <org.apache.karaf.version>4.0.5</org.apache.karaf.version>
-    <org.apache.jackrabbit.version>2.13.1</org.apache.jackrabbit.version>
-    <org.apache.jackrabbit.oak.version>1.5.7</org.apache.jackrabbit.oak.version>
-    <org.apache.tika.version>1.13</org.apache.tika.version>
+    <org.apache.karaf.version>4.1.0-SNAPSHOT</org.apache.karaf.version>
+    <org.apache.jackrabbit.version>2.13.6</org.apache.jackrabbit.version>
+    <org.apache.jackrabbit.oak.version>1.5.15</org.apache.jackrabbit.oak.version>
+    <org.apache.tika.version>1.14</org.apache.tika.version>
     <feature.version>0.1.1.SNAPSHOT</feature.version>
   </properties>
 
@@ -75,5 +75,18 @@
       </plugin>
     </plugins>
   </build>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-repoinit</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 
 </project>

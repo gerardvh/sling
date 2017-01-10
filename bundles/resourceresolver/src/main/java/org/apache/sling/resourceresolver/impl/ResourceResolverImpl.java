@@ -246,7 +246,6 @@ public class ResourceResolverImpl extends SlingAdaptable implements ResourceReso
     /**
      * @see org.apache.sling.api.resource.ResourceResolver#resolve(javax.servlet.http.HttpServletRequest)
      */
-    @SuppressWarnings("deprecation")
     @Override
     public Resource resolve(final HttpServletRequest request) {
         checkClosed();
@@ -683,7 +682,7 @@ public class ResourceResolverImpl extends SlingAdaptable implements ResourceReso
         if ( path != null ) {
             // if the path is absolute, normalize . and .. segments and get res
             if (path.startsWith("/")) {
-                ParsedParameters parsedPath = new ParsedParameters(path);
+                final ParsedParameters parsedPath = new ParsedParameters(path);
                 path = ResourceUtil.normalize(parsedPath.getRawPath());
                 result = (path != null) ? getAbsoluteResourceInternal(parent, path, parsedPath.getParameters(), false) : null;
                 if (result != null) {
@@ -1311,13 +1310,13 @@ public class ResourceResolverImpl extends SlingAdaptable implements ResourceReso
              // Check if the resource is of the given type. This method first checks the
              // resource type of the resource, then its super resource type and continues
              //  to go up the resource super type hierarchy.
-             if (resourceType.equals(resource.getResourceType())) {
+             if (ResourceTypeUtil.areResourceTypesEqual(resourceType, resource.getResourceType(), getSearchPath())) {
                  result = true;
              } else {
                  Set<String> superTypesChecked = new HashSet<String>();
                  String superType = this.getParentResourceType(resource);
                  while (!result && superType != null) {
-                     if (resourceType.equals(superType)) {
+                     if (ResourceTypeUtil.areResourceTypesEqual(resourceType, superType, getSearchPath())) {
                          result = true;
                      } else {
                          superTypesChecked.add(superType);

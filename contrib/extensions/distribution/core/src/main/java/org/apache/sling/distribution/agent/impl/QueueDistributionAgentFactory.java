@@ -38,6 +38,7 @@ import org.apache.sling.distribution.component.impl.DistributionComponentConstan
 import org.apache.sling.distribution.component.impl.SettingsUtils;
 import org.apache.sling.distribution.event.impl.DistributionEventFactory;
 import org.apache.sling.distribution.log.impl.DefaultDistributionLog;
+import org.apache.sling.distribution.monitor.impl.MonitoringDistributionQueueProvider;
 import org.apache.sling.distribution.monitor.impl.QueueDistributionAgentMBean;
 import org.apache.sling.distribution.monitor.impl.QueueDistributionAgentMBeanImpl;
 import org.apache.sling.distribution.packaging.DistributionPackageBuilder;
@@ -167,7 +168,7 @@ public class QueueDistributionAgentFactory extends AbstractDistributionAgentFact
     @Override
     protected SimpleDistributionAgent createAgent(String agentName, BundleContext context, Map<String, Object> config, DefaultDistributionLog distributionLog) {
 
-        String serviceName = PropertiesUtil.toString(config.get(SERVICE_NAME), null);
+        String serviceName = SettingsUtils.removeEmptyEntry(PropertiesUtil.toString(config.get(SERVICE_NAME), null));
         String[] allowedRoots = PropertiesUtil.toStringArray(config.get(ALLOWED_ROOTS), null);
         allowedRoots = SettingsUtils.removeEmptyEntries(allowedRoots);
 
@@ -176,7 +177,8 @@ public class QueueDistributionAgentFactory extends AbstractDistributionAgentFact
         priorityQueues = SettingsUtils.removeEmptyEntries(priorityQueues);
 
 
-        DistributionQueueProvider queueProvider = new JobHandlingDistributionQueueProvider(agentName, jobManager, context);
+        DistributionQueueProvider queueProvider = new MonitoringDistributionQueueProvider(new JobHandlingDistributionQueueProvider(agentName, jobManager, context), context);
+
         DistributionQueueDispatchingStrategy exportQueueStrategy = null;
 
 

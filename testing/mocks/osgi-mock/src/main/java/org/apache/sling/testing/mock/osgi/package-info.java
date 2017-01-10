@@ -19,5 +19,5 @@
 /**
  * Mock implementation of selected OSGi APIs.
  */
-@org.osgi.annotation.versioning.Version("3.1")
+@org.osgi.annotation.versioning.Version("3.2")
 package org.apache.sling.testing.mock.osgi;

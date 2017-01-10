@@ -18,6 +18,7 @@
  */
 package org.apache.sling.resourceresolver.impl.observation;
 
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -35,10 +36,12 @@ import org.apache.sling.api.resource.observation.ExternalResourceChangeListener;
 import org.apache.sling.api.resource.observation.ResourceChange;
 import org.apache.sling.api.resource.observation.ResourceChange.ChangeType;
 import org.apache.sling.api.resource.observation.ResourceChangeListener;
+import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.osgi.service.event.EventHandler;
@@ -48,6 +51,7 @@ import org.slf4j.LoggerFactory;
 @Component(service = ResourceChangeListener.class,
            configurationPolicy = ConfigurationPolicy.IGNORE,
            property = {
+                  Constants.SERVICE_VENDOR + "=The Apache Software Foundation",
                   ResourceChangeListener.PATHS + "=/",
                   ResourceChangeListener.CHANGES + "=ADDED",
                   ResourceChangeListener.CHANGES + "=CHANGED",
@@ -69,9 +73,8 @@ public class OsgiObservationBridge implements ResourceChangeListener, ExternalRe
 
     private EventSendingJob job;
 
-    @SuppressWarnings("deprecation")
     protected void activate() throws LoginException {
-        resolver = resolverFactory.getAdministrativeResourceResolver(null);
+        resolver = resolverFactory.getServiceResourceResolver(Collections.singletonMap(ResourceResolverFactory.SUBSERVICE, (Object)"read"));
         changesQueue = new LinkedBlockingQueue<ResourceChange>();
         job = new EventSendingJob(changesQueue);
         Executors.newSingleThreadExecutor().submit(job);
@@ -79,10 +82,16 @@ public class OsgiObservationBridge implements ResourceChangeListener, ExternalRe
 
     @Reference(name = "handlers",
             cardinality=ReferenceCardinality.AT_LEAST_ONE,
+            policy=ReferencePolicy.DYNAMIC,
             service=EventHandler.class,
-            target="(event.topics=org/apache/sling/api/resource/*)")
+            target="(|(event.topics=org/apache/sling/api/resource/Resource/*)(event.topics=org/apache/sling/api/resource/ResourceProvider/*))")
     private void bindEventHandler(final EventHandler handler) {
         logger.warn("Found OSGi Event Handler for deprecated resource bridge: {}", handler);
+    }
+
+    @SuppressWarnings("unused")
+    private void unbindEventHandler(final EventHandler handler) {
+        // nothing to do here
     }
 
     protected void deactivate() {

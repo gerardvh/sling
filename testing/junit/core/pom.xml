@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.junit.core</artifactId>
-    <version>1.0.19-SNAPSHOT</version>
+    <version>1.0.24-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>Apache Sling JUnit Core</name>
@@ -143,6 +143,12 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.http.whiteboard</artifactId>
+            <version>1.0.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

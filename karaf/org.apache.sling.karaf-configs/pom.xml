@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.sling</groupId>
     <artifactId>sling</artifactId>
-    <version>28</version>
+    <version>29</version>
     <relativePath/>
   </parent>
 
@@ -79,8 +79,8 @@
                 </artifact>
                 <artifact>
                   <classifier>org.apache.jackrabbit.oak.plugins.document.DocumentNodeStoreService</classifier>
-                  <file>src/main/resources/org.apache.jackrabbit.oak.plugins.document.DocumentNodeStoreService.cfg</file>
-                  <type>cfg</type>
+                  <file>src/main/resources/org.apache.jackrabbit.oak.plugins.document.DocumentNodeStoreService.config</file>
+                  <type>config</type>
                 </artifact>
                 <artifact>
                   <classifier>org.apache.jackrabbit.oak.plugins.index.lucene.LuceneIndexProviderService</classifier>
@@ -118,6 +118,21 @@
                   <type>config</type>
                 </artifact>
                 <artifact>
+                  <classifier>org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment-composum</classifier>
+                  <file>src/main/resources/org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment-composum.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment-sling</classifier>
+                  <file>src/main/resources/org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment-sling.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.jcr.repoinit.impl.RepositoryInitializer</classifier>
+                  <file>src/main/resources/org.apache.sling.jcr.repoinit.impl.RepositoryInitializer.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
                   <classifier>org.apache.sling.nosql.couchbase.client.CouchbaseClient.factory.config-default</classifier>
                   <file>src/main/resources/org.apache.sling.nosql.couchbase.client.CouchbaseClient.factory.config-default.config</file>
                   <type>config</type>
@@ -140,6 +155,61 @@
                 <artifact>
                   <classifier>org.apache.sling.samples.fling.internal.WiserSmtpService</classifier>
                   <file>src/main/resources/org.apache.sling.samples.fling.internal.WiserSmtpService.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-event</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-event.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-discovery</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-discovery.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-i18n</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-i18n.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-installer_provider_jcr</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-installer_provider_jcr.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-jcr_resource</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-jcr_resource.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-resourceresolver</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-resourceresolver.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-servlets</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-servlets.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting_sightly</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting_sightly.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting_thymeleaf</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting_thymeleaf.config</file>
+                  <type>config</type>
+                </artifact>
+                <artifact>
+                  <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-xss</classifier>
+                  <file>src/main/resources/org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-xss.config</file>
                   <type>config</type>
                 </artifact>
               </artifacts>

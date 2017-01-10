@@ -30,11 +30,10 @@ import javax.jcr.Value;
 
 import org.apache.sling.jcr.api.SlingRepository;
 import org.apache.sling.serviceusermapping.ServiceUserMapper;
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import aQute.bnd.annotation.ProviderType;
 
 /**
  * The <code>AbstractSlingRepository2</code> is an abstract implementation of
@@ -73,7 +72,7 @@ public abstract class AbstractSlingRepository2 implements SlingRepository {
 
     /** The bundle using this repository instance. */
     private final Bundle usingBundle;
-    
+
     /**
      * Sets up this abstract SlingRepository implementation.
      *
@@ -371,14 +370,15 @@ public abstract class AbstractSlingRepository2 implements SlingRepository {
      */
     @Override
     public final Session loginAdministrative(final String workspace) throws RepositoryException {
-        final boolean whitelisted = getSlingRepositoryManager().getLoginAdminWhitelist().allowLoginAdministrative(usingBundle);
+        final boolean whitelisted = getSlingRepositoryManager().allowLoginAdministrativeForBundle(usingBundle);
 
         if(!whitelisted) {
-            logger.error("Bundle {} is NOT whitelisted to use SlingRepository.loginAdministrative", usingBundle.getSymbolicName());
-            throw new LoginException();
+            final String symbolicName = usingBundle.getSymbolicName();
+            logger.error("Bundle {} is NOT whitelisted to use SlingRepository.loginAdministrative", symbolicName);
+            throw new LoginException("Bundle " + symbolicName +" is NOT whitelisted");
         } else if (this.getSlingRepositoryManager().isDisableLoginAdministrative()) {
             logger.error("SlingRepository.loginAdministrative is disabled. Please use SlingRepository.loginService.");
-            throw new LoginException();
+            throw new LoginException("SlingRepository.loginAdministrative is disabled.");
         }
 
         logger.debug("SlingRepository.loginAdministrative is deprecated. Please use SlingRepository.loginService.");

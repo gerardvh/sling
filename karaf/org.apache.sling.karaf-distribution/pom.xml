@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.sling</groupId>
     <artifactId>sling</artifactId>
-    <version>28</version>
+    <version>29</version>
     <relativePath/>
   </parent>
 
@@ -38,9 +38,10 @@
   <!-- https://github.com/apache/karaf/blob/master/assemblies/apache-karaf/pom.xml -->
 
   <properties>
-    <org.apache.karaf.version>4.0.5</org.apache.karaf.version>
+    <org.apache.karaf.version>4.1.0-SNAPSHOT</org.apache.karaf.version>
+    <jna.version>4.2.2</jna.version>
     <servicemix.specs.version>2.7.0</servicemix.specs.version>
-    <xerces.version>2.11.0</xerces.version>
+    <xerces.version>2.11.0_1</xerces.version>
     <xalan.bundle.version>2.7.2_3</xalan.bundle.version>
     <xalan-serializer.bundle.version>2.7.2_1</xalan-serializer.bundle.version>
   </properties>
@@ -105,7 +106,7 @@
       <artifactId>org.apache.sling.karaf-configs</artifactId>
       <version>${project.version}</version>
       <classifier>org.apache.jackrabbit.oak.plugins.document.DocumentNodeStoreService</classifier>
-      <type>cfg</type>
+      <type>config</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -168,6 +169,22 @@
       <groupId>org.apache.sling</groupId>
       <artifactId>org.apache.sling.karaf-configs</artifactId>
       <version>${project.version}</version>
+      <classifier>org.apache.sling.jcr.base.internal.LoginAdminWhitelist.fragment-sling</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.jcr.repoinit.impl.RepositoryInitializer</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
       <classifier>org.apache.sling.nosql.couchbase.client.CouchbaseClient.factory.config-default</classifier>
       <type>config</type>
       <scope>runtime</scope>
@@ -201,6 +218,70 @@
       <artifactId>org.apache.sling.karaf-configs</artifactId>
       <version>${project.version}</version>
       <classifier>org.apache.sling.samples.fling.internal.WiserSmtpService</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-event</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-discovery</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-i18n</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-servlets</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting_sightly</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-scripting_thymeleaf</classifier>
+      <type>config</type>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.karaf-configs</artifactId>
+      <version>${project.version}</version>
+      <classifier>org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl.amended-xss</classifier>
       <type>config</type>
       <scope>runtime</scope>
     </dependency>
@@ -292,7 +373,6 @@
             <feature>sling-jcr</feature>
             <feature>sling-jcr-compiler</feature>
             <feature>sling-jcr-jackrabbit-security</feature>
-            <feature>sling-jcr-oak</feature>
             <feature>sling-jcr-repoinit</feature>
             <!-- Apache Sling Launchpad -->
             <feature>sling-launchpad-content</feature>
@@ -318,12 +398,15 @@
             <feature>sling-servlets</feature>
             <!-- Apache Jackrabbit -->
             <feature>jackrabbit-sling</feature>
+            <feature>jackrabbit-oak-sling</feature>
             <!-- Apache Tika -->
             <feature>tika-sling</feature>
             <!-- Apache Sling Samples -->
             <feature>sling-samples-fling</feature>
             <!-- Composum -->
             <feature>composum-sling</feature>
+            <!-- Pax URL (KARAF-4707) -->
+            <feature>pax-url-classpath-sling</feature>
           </installedFeatures>
           <startupFeatures>
             <!-- <feature>eventadmin</feature> -->
@@ -351,8 +434,7 @@
             <feature>webconsole</feature>
           </bootFeatures>
           <libraries>
-            <library>xerces-${xerces.version}.jar;url:="wrap:mvn:xerces/xercesImpl/${xerces.version}$Export-Package=org.apache.*;version=${xerces.version}";type:=endorsed;export:=true;delegate:=true</library>
-
+            <library>mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.xerces/${xerces.version};type:=endorsed;export:=true;delegate:=true</library>
             <library>mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.jaxp-api-1.4/${servicemix.specs.version};type:=endorsed;export:=true</library>
             <library>mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.jaxb-api-2.2/${servicemix.specs.version};type:=endorsed;export:=true</library>
             <library>mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.jaxws-api-2.2/${servicemix.specs.version};type:=endorsed;export:=true</library>
@@ -365,7 +447,11 @@
 
             <library>mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.activator/${servicemix.specs.version};type:=default;export:=true</library>
             <library>mvn:org.apache.servicemix.specs/org.apache.servicemix.specs.locator/${servicemix.specs.version};type:=default;export:=true</library>
+
+            <library>mvn:net.java.dev.jna/jna/${jna.version};type:=boot;export:=false</library>
+            <library>mvn:net.java.dev.jna/jna-platform/${jna.version};type:=boot;export:=false</library>
           </libraries>
+          <javase>1.8</javase>
         </configuration>
       </plugin>
     </plugins>

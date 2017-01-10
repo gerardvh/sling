@@ -23,6 +23,7 @@ import java.util.Collections;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.m2e.core.project.configurator.MojoExecutionKey;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -44,51 +45,35 @@ import org.eclipse.ui.PlatformUI;
  */
 public class BundleProjectNotSupportingM2EIncrementalBuildQuickFix implements IMarkerResolutionGenerator {
 
+    private static final String DEFAULT_DESCRIPTION = "Further information on how to configure the incremental build correctly is available in <a href=\"http://sling.apache.org/documentation/development/ide-tooling/ide-tooling-incremental-build.html\">http://sling.apache.org/documentation/development/ide-tooling/ide-tooling-incremental-build.html</a>";
+
     @Override
     public IMarkerResolution[] getResolutions(IMarker marker) {
         // either suggest to use maven-bundle-project 3.2.0 with correct configuration
-        IMarkerResolution[] resolutions = new IMarkerResolution[3];
+        IMarkerResolution[] resolutions = new IMarkerResolution[2];
         resolutions[0] = new InstallM2ETychoExtension();
-        resolutions[1] = new FixUsingBndMavenPlugin();
-        resolutions[2] = new FixUsingMBP320WithCorrectConfiguration();
+        resolutions[1] = new DescribeHowToConfigureMavenPluginsCorrectly();
         return resolutions;
     }
 
-    public static final class FixUsingMBP320WithCorrectConfiguration implements IMarkerResolution {
+    public static final class DescribeHowToConfigureMavenPluginsCorrectly implements IMarkerResolution {
 
-        FixUsingMBP320WithCorrectConfiguration() {
+        private static final String LABEL = "Use more recent maven-plugins with the right configuration";
+
+        DescribeHowToConfigureMavenPluginsCorrectly() {
         }
 
         @Override
         public String getLabel() {
-            return "Use maven-bundle-plugin 3.2.0 or newer with correct configuration";
+            return LABEL;
         }
 
         @Override
         public void run(IMarker marker) {
             MessageDialogWithLinkSection.openInformationWithLink(null,
-                    "Use maven-bundle-plugin 3.2.0 or newer with correct configuration",
-                    "Please upgrade to at least maven-bundle-plugin 3.2.0 and explicitly configure goal 'manifest' with configuration 'supportIncrementalBuild' and 'exportScr' set to 'true'.",
-                    "Further information is available at <a href=\"http://felix.apache.org/documentation/faqs/apache-felix-bundle-plugin-faq.html#use-scr-metadata-generated-by-bnd-in-unit-tests\">Maven Bundle Plugin FAQ</a>, <a href=\"https://issues.apache.org/jira/browse/FELIX-4009\">FELIX-4009</a> and <a href=\"https://issues.apache.org/jira/browse/https://issues.apache.org/jira/browse/FELIX-3324\">https://issues.apache.org/jira/browse/FELIX-3324</a>");
-        }
-    }
-    
-    public static final class FixUsingBndMavenPlugin implements IMarkerResolution {
-
-        FixUsingBndMavenPlugin() {
-        }
-
-        @Override
-        public String getLabel() {
-            return "Use bnd-maven-plugin in version 2.4.1 or newer";
-        }
-
-        @Override
-        public void run(IMarker marker) {
-            MessageDialogWithLinkSection.openInformationWithLink(null,
-                    "Use bnd-maven-plugin 2.4.1 or newer",
-                    "Please use bnd-maven-plugin as this supports m2e incremental builds correctly.",
-                    "Further information is available at <a href=\"http://njbartlett.name/2015/03/27/announcing-bnd-maven-plugin.html\">Blog Post with Announcement</a>, <a href=\"https://github.com/bndtools/bnd/issues/1180\">issues-1180</a> and <a href=\"https://github.com/bndtools/bnd/pull/1333\">PR-1333</a>.");
+                    LABEL,
+                    "You need to configure the maven plugins appropriately and maybe upgrade to a newer version.",
+                    DEFAULT_DESCRIPTION);
         }
     }
 
@@ -155,10 +140,11 @@ public class BundleProjectNotSupportingM2EIncrementalBuildQuickFix implements IM
             return "Install m2e-tycho extension (incompatible with maven-bundle-plugin 3.2.0 and later)";
         }
 
+        @SuppressWarnings("restriction")
         @Override
         public void run(IMarker marker) {
             org.eclipse.m2e.internal.discovery.MavenDiscovery.launchWizard(Collections.singleton("bundle"),
-                    Collections.EMPTY_LIST, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                    Collections.<MojoExecutionKey> emptyList(), Collections.<String> emptyList(), Collections.<String> emptyList());
         }
     }
 

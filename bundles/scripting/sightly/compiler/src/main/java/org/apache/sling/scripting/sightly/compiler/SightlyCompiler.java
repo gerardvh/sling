@@ -103,8 +103,8 @@ public final class SightlyCompiler {
 
         // register filters
         final List<Filter> filters = new ArrayList<>(5);
-        filters.add(FormatFilter.getInstance());
         filters.add(I18nFilter.getInstance());
+        filters.add(FormatFilter.getInstance());
         filters.add(JoinFilter.getInstance());
         filters.add(URIManipulationFilter.getInstance());
         filters.add(XSSFilter.getInstance());
@@ -146,7 +146,7 @@ public final class SightlyCompiler {
             }
             frontend.compile(stream, scriptSource);
             for (PushStream.StreamMessage w : stream.getWarnings()) {
-                ScriptError warning = getScriptError(scriptSource, w.getCode(), 0, 0, w.getMessage());
+                ScriptError warning = getScriptError(scriptSource, w.getCode(), 1, 0, w.getMessage());
                 compilationResult.getWarnings().add(new CompilerMessageImpl(scriptName, warning.errorMessage, warning.lineNumber, warning
                         .column));
             }
@@ -161,26 +161,31 @@ public final class SightlyCompiler {
         return compilationResult;
     }
 
-    private ScriptError getScriptError(String documentFragment, String offendingInput, int lineOffset, int column, String message) {
+    private ScriptError getScriptError(String documentFragment, String offendingInput, int lineOffset, int columnOffset, String message) {
         if (StringUtils.isNotEmpty(offendingInput)) {
             int offendingInputIndex = documentFragment.indexOf(offendingInput);
             if (offendingInputIndex > -1) {
                 String textBeforeError = documentFragment.substring(0, offendingInputIndex);
-                int line = 1;
-                int newLine = 0;
-                while (textBeforeError.length() > 0 && newLine != -1) {
-                    newLine = textBeforeError.indexOf(System.lineSeparator());
-                    if (newLine != -1) {
-                        line++;
-                        textBeforeError = textBeforeError.substring(newLine + 1, textBeforeError.length());
+                int line = lineOffset;
+                int lastNewLineIndex = 0;
+                for (String s : new String[] {"\r\n", "\r", "\n"}) {
+                    int l = textBeforeError.split(s, -1).length - 1;
+                    if (l + lineOffset > line) {
+                        line = l + lineOffset;
+                        int ix = textBeforeError.lastIndexOf(s);
+                        if (ix > 0) {
+                            lastNewLineIndex = ix + s.length() - 1;
+                        }
                     }
                 }
-                line = line + lineOffset;
-                column = textBeforeError.length() + column + 1;
+                int column = textBeforeError.substring(lastNewLineIndex).length();
+                if (column != columnOffset) {
+                    column +=columnOffset;
+                }
                 return new ScriptError(line, column, offendingInput + ": " + message);
             }
         }
-        return new ScriptError(lineOffset, column, message);
+        return new ScriptError(lineOffset, columnOffset, message);
     }
 
     private static class ScriptError {

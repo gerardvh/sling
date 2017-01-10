@@ -6,6 +6,8 @@ def svnBase = "https://svn.apache.org/repos/asf/sling/trunk"
 //   - downstream (optional): list of downstream projects
 //   - archive (optional): list of archive patterns
 //   - extraGoalsParams (optional): additional string for the Maven goals to execute
+//   - rebuildDaily (optional): boolean, when enabled configures the build to run once every
+//                                24 hours,even if no changes are found in source control
 def modules = [
     [
         location: 'bundles/api'
@@ -30,7 +32,7 @@ def modules = [
     ],
     [
         location: 'bundles/commons/log-webconsole'
-    ],    
+    ],
     [
         location: 'bundles/commons/logservice'
     ],
@@ -79,6 +81,19 @@ def modules = [
         location: 'bundles/extensions/bundleresource'
     ],
     [
+        location: 'bundles/extensions/caconfig/api'
+    ],
+    [
+        location: 'bundles/extensions/caconfig/impl'
+    ],
+    [
+        location: 'bundles/extensions/caconfig/integration-tests',
+        jdks: ["1.8"]
+    ],
+    [
+        location: 'bundles/extensions/caconfig/spi'
+    ],
+    [
         location: 'bundles/extensions/dea'
     ],
     [
@@ -104,9 +119,6 @@ def modules = [
     ],
     [
         location: 'bundles/extensions/event'
-    ],
-    [
-        location: 'bundles/extensions/explorer'
     ],
     [
         location: 'bundles/extensions/feature-flags'
@@ -155,6 +167,9 @@ def modules = [
     ],
     [
         location: 'bundles/extensions/models/impl'
+    ],
+    [
+        location: 'bundles/extensions/models/jackson-exporter'
     ],
     [
         location: 'bundles/extensions/models/integration-tests'
@@ -247,7 +262,8 @@ def modules = [
         location: 'bundles/jcr/jcr-wrapper'
     ],
     [
-        location: 'bundles/jcr/oak-server'
+        location: 'bundles/jcr/oak-server',
+        rebuildDaily : true
     ],
     [
         location: 'bundles/jcr/registration'
@@ -371,22 +387,7 @@ def modules = [
         location: 'contrib/crankstart/test-model'
     ],
     [
-        location: 'contrib/explorers/gwt'
-    ],
-    [
         location: 'contrib/explorers/resourceeditor'
-    ],
-    [
-        location: 'contrib/extensions/apt/parser'
-    ],
-    [
-        location: 'contrib/extensions/apt/servlet'
-    ],
-    [
-        location: 'contrib/extensions/bgservlets/engine'
-    ],
-    [
-        location: 'contrib/extensions/bgservlets/testing'
     ],
     [
         location: 'contrib/extensions/cache/api'
@@ -446,25 +447,7 @@ def modules = [
         location: 'contrib/extensions/hapi/client'
     ],
     [
-        location: 'contrib/extensions/dojo-sling'
-    ],
-    [
-        location: 'contrib/extensions/dojo'
-    ],
-    [
-        location: 'contrib/extensions/ftpserver'
-    ],
-    [
-        location: 'contrib/extensions/gwt/sample'
-    ],
-    [
-        location: 'contrib/extensions/gwt/servlet'
-    ],
-    [
         location: 'contrib/extensions/jmxprovider'
-    ],
-    [
-        location: 'contrib/extensions/jolokia'
     ],
     [
         location: 'contrib/extensions/leak-detector'
@@ -474,12 +457,6 @@ def modules = [
     ],
     [
         location: 'contrib/extensions/mongodb'
-    ],
-    [
-        location: 'contrib/extensions/oak-s3'
-    ],
-    [
-        location: 'contrib/extensions/obr'
     ],
     [
         location: 'contrib/extensions/reqanalyzer'
@@ -543,38 +520,7 @@ def modules = [
         location: 'contrib/extensions/sling-dynamic-include'
     ],
     [
-        location: 'contrib/extensions/contextaware-config/api'
-    ],
-    [
-        location: 'contrib/extensions/contextaware-config/impl'
-    ],
-    [
-        location: 'contrib/extensions/contextaware-config/integration-tests',
-        jdks: ["1.8"]
-    ],
-    [
-        location: 'contrib/extensions/contextaware-config/tooling/bnd-plugin-integration-tests'
-    ],
-    [
-        location: 'contrib/extensions/contextaware-config/tooling/bnd-plugin'
-    ],
-    [
-        location: 'contrib/extensions/contextaware-config/spi'
-    ],
-    [
         location: 'contrib/extensions/oak-restrictions'
-    ],
-    [
-        location: 'contrib/jcr/compiler'
-    ],
-    [
-        location: 'contrib/jcr/jackrabbit-client'
-    ],
-    [
-        location: 'contrib/jcr/ocm'
-    ],
-    [
-        location: 'contrib/jcr/prefs'
     ],
     [
         location: 'contrib/jcr/resourcesecurity'
@@ -599,34 +545,7 @@ def modules = [
         location: 'contrib/scripting/java'
     ],
     [
-        location: 'contrib/scripting/jsp-taglib-atom'
-    ],
-    [
-        location: 'contrib/scripting/jst'
-    ],
-    [
-        location: 'contrib/scripting/python'
-    ],
-    [
-        location: 'contrib/scripting/ruby'
-    ],
-    [
-        location: 'contrib/scripting/scala/config'
-    ],
-    [
-        location: 'contrib/scripting/scala/samples/forum'
-    ],
-    [
-        location: 'contrib/scripting/scala/samples/hello-world'
-    ],
-    [
-        location: 'contrib/scripting/scala/script'
-    ],
-    [
         location: 'contrib/scripting/script-console'
-    ],
-    [
-        location: 'contrib/scripting/velocity'
     ],
     [
         location: 'contrib/scripting/xproc'
@@ -668,24 +587,24 @@ def modules = [
     [
         location: "installer/providers/file"
     ],
-    [
-        location: 'karaf/org.apache.sling.karaf-distribution'
-    ],
-    [
-        location: 'karaf/org.apache.sling.karaf-features'
-    ],
-    [
-        location: 'karaf/org.apache.sling.karaf-integration-tests'
-    ],
-    [
-        location: 'karaf/org.apache.sling.karaf-launchpad-oak-tar-integration-tests'
-    ],
-    [
-        location: 'karaf/org.apache.sling.karaf-repoinit'
-    ],
-    [
-        location: 'karaf/org.apache.sling.karaf-configs'
-    ],
+//    [
+//        location: 'karaf/org.apache.sling.karaf-distribution'
+//    ],
+//    [
+//        location: 'karaf/org.apache.sling.karaf-features'
+//    ],
+//    [
+//        location: 'karaf/org.apache.sling.karaf-integration-tests'
+//    ],
+//    [
+//        location: 'karaf/org.apache.sling.karaf-launchpad-oak-tar-integration-tests'
+//    ],
+//    [
+//        location: 'karaf/org.apache.sling.karaf-repoinit'
+//    ],
+//    [
+//        location: 'karaf/org.apache.sling.karaf-configs'
+//    ],
     [
         location: 'launchpad/api',
         jdks: ["1.8"]
@@ -766,9 +685,6 @@ def modules = [
         location: 'samples/framework-fragment'
     ],
     [
-        location: 'samples/inplace-integration-test'
-    ],
-    [
         location: 'samples/installing-dependencies'
     ],
     [
@@ -841,6 +757,9 @@ def modules = [
         location: 'testing/junit/rules'
     ],
     [
+        location: 'testing/mocks/caconfig-mock-plugin'
+    ],
+    [
         location: 'testing/mocks/jcr-mock'
     ],
     [
@@ -885,6 +804,12 @@ def modules = [
         jdks: ["1.8"]
     ],
     [
+        location: 'tooling/bnd/caconfig-bnd-plugin'
+    ],
+    [
+        location: 'tooling/bnd/models-bnd-plugin'
+    ],
+    [
         location: 'tooling/support/install'
     ],
     [
@@ -902,7 +827,7 @@ def modules = [
 // deployed for maximum compatibility
 def defaultJdks = ["1.7", "1.8"]
 def defaultMvn = "Maven 3.3.9"
-def defaultSlave = "Ubuntu&&!ubuntu3"
+def defaultSlave = "ubuntu"
 
 def jdkMapping = [
     "1.7": "JDK 1.7 (latest)",
@@ -961,6 +886,9 @@ for more details</p>''')
             triggers {
                 snapshotDependencies(true)
                 scm('H/15 * * * *')
+                if ( module.rebuildDaily ) {
+                    cron('@daily')
+                }
             }
 
             // timeout if the job takes 4 times longer than the average
@@ -990,7 +918,7 @@ for more details</p>''')
             // job is triggered first and we may end up with a
             // mix of Java 7 and Java 8 artifacts for projects which
             // use these 2 versions
-            def extraGoalsParams = module.extraGoalsParams ?: "" 
+            def extraGoalsParams = module.extraGoalsParams ?: ""
             goals( (deploy ? "-U clean deploy" : "-U clean verify") + " " + extraGoalsParams)
 
             publishers {

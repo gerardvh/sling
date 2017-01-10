@@ -20,10 +20,8 @@ package org.apache.sling.testing.mock.osgi.context;
 
 import java.lang.reflect.Array;
 import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.Map;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.sling.testing.mock.osgi.MapUtil;
 import org.apache.sling.testing.mock.osgi.MockEventAdmin;
 import org.apache.sling.testing.mock.osgi.MockOsgi;
@@ -115,10 +113,7 @@ public class OsgiContextImpl {
      * @return Registered service instance
      */
     public final <T> T registerService(final Class<T> serviceClass, final T service, final Map<String, Object> properties) {
-        Dictionary<String, Object> serviceProperties = null;
-        if (properties != null) {
-            serviceProperties = new Hashtable<String, Object>(properties);
-        }
+        Dictionary<String, Object> serviceProperties = MapUtil.toDictionary(properties);
         bundleContext().registerService(serviceClass != null ? serviceClass.getName() : null, service, serviceProperties);
         return service;
     }
@@ -208,7 +203,7 @@ public class OsgiContextImpl {
                 }
                 return services;
             } else {
-                return (ServiceType[])ArrayUtils.EMPTY_OBJECT_ARRAY;
+                return (ServiceType[])Array.newInstance(serviceType, 0);
             }
         } catch (InvalidSyntaxException ex) {
             throw new RuntimeException("Invalid filter syntax: " + filter, ex);

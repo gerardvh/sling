@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Dictionary;
@@ -83,9 +84,14 @@ public class OsgiInstallerImpl
 implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Runnable {
 
     /**
-     * The name of the bundle context property defining handling of bundle updates
+     * The name of the framework property defining handling of bundle updates
      */
-    private static final String START_LEVEL_HANDLING = "sling.installer.switchstartlevel";
+    private static final String PROP_START_LEVEL_HANDLING = "sling.installer.switchstartlevel";
+
+    /**
+     * The name of the framework property setting required services
+     */
+    private static final String PROP_REQUIRED_SERVICES = "sling.installer.requiredservices";
 
     /** The logger */
     private final Logger logger =  LoggerFactory.getLogger(this.getClass());
@@ -107,6 +113,9 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
 
     /** Update infos to process. */
     private final List<UpdateInfo> updateInfos = new ArrayList<OsgiInstallerImpl.UpdateInfo>();
+
+    /** Are the required services satisfied? */
+    private volatile boolean satisfied = false;
 
     /** Are we still activate? */
     private volatile boolean active = true;
@@ -150,7 +159,7 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
         final File f = FileDataStore.SHARED.getDataFile("RegisteredResourceList.ser");
         this.listener = new InstallListener(ctx, logger);
         this.persistentList = new PersistentResourceList(f, listener);
-        this.switchStartLevel = PropertiesUtil.toBoolean(ctx.getProperty(START_LEVEL_HANDLING), false);
+        this.switchStartLevel = PropertiesUtil.toBoolean(ctx.getProperty(PROP_START_LEVEL_HANDLING), false);
     }
 
     /**
@@ -218,13 +227,14 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
     private void init() {
         // start service trackers
         this.factoryTracker = new SortingServiceTracker<InstallTaskFactory>(ctx, InstallTaskFactory.class.getName(), this);
-        this.factoryTracker.open();
         this.transformerTracker = new SortingServiceTracker<ResourceTransformer>(ctx, ResourceTransformer.class.getName(), this);
-        this.transformerTracker.open();
         this.updateHandlerTracker = new SortingServiceTracker<UpdateHandler>(ctx, UpdateHandler.class.getName(), null);
+        this.factoryTracker.open();
+        this.transformerTracker.open();
         this.updateHandlerTracker.open();
 
         this.logger.info("Apache Sling OSGi Installer Service started.");
+        this.checkSatisfied();
     }
 
     /**
@@ -247,7 +257,6 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
             this.init();
 
             while (this.active) {
-                this.logger.debug("Starting new installer cycle");
                 this.listener.start();
 
                 processUpdateInfos();
@@ -256,6 +265,14 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
                 this.mergeNewlyRegisteredResources();
 
                 synchronized ( this.resourcesLock ) {
+                    if ( !this.satisfied ) {
+                        logger.debug("Required services are not available yet.");
+                        try {
+                            logger.debug("wait() on resourcesLock");
+                            this.resourcesLock.wait();
+                        } catch (final InterruptedException ignore) {}
+                        continue;
+                    }
                     this.retryDuringTaskExecution = false;
                 }
 
@@ -443,37 +460,26 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
     public void registerResources(final String scheme, final InstallableResource[] resources) {
         this.listener.start();
         try {
-            List<InternalResource> registeredResources = this.createResources(scheme, resources);
-            if ( registeredResources == null ) {
+            List<InternalResource> incomingResources = this.createResources(scheme, resources);
+            if ( incomingResources == null ) {
                 // create empty list to make processing easier
-                registeredResources = new ArrayList<InternalResource>();
+                incomingResources = new ArrayList<>();
             }
             logger.debug("Registered new resource scheme: {}", scheme);
             synchronized (this.resourcesLock) {
-                this.newResourcesSchemes.put(scheme, registeredResources);
+                this.newResourcesSchemes.put(scheme, incomingResources);
 
-                // now update resources and removed resources and remove all for this scheme!
+                // Update new/removed resources
                 final String prefix = scheme + ':';
-                // added resources
 
+                // newResources are the ones that arrived (via updateResources IIUC)
+                // since the last call to this method. Here we remove all newResources
+                // that match our prefix, as the incoming ones replace them
                 final Iterator<InternalResource> rsrcIter = this.newResources.iterator();
                 while ( rsrcIter.hasNext() ) {
                     final InternalResource rsrc = rsrcIter.next();
                     if ( rsrc.getURL().startsWith(prefix) ) {
-                        // check if we got the same resource
-                        if ( rsrc.getPrivateCopyOfFile() != null ) {
-                            boolean found = false;
-                            for(final InternalResource newRsrc : registeredResources) {
-                                if ( newRsrc.getURL().equals(rsrc.getURL()) && newRsrc.getPrivateCopyOfFile() == null ) {
-                                    found = true;
-                                    newRsrc.setPrivateCopyOfFile(rsrc.getPrivateCopyOfFile());
-                                    break;
-                                }
-                            }
-                            if ( !found ) {
-                                rsrc.getPrivateCopyOfFile().delete();
-                            }
-                        }
+                        prepareToRemove(rsrc, incomingResources);
                         rsrcIter.remove();
                     }
                 }
@@ -493,7 +499,35 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
             this.closeInputStreams(resources);
         }
     }
-
+    
+    /** When a resource from "incoming" is about to replace "existing", we might need to transfer their private
+     *  data file, or delete it if it's not needed anymore.
+     */
+    private void prepareToRemove(InternalResource existing, Collection<InternalResource> incoming) {
+        if(existing.getPrivateCopyOfFile() != null) {
+            for(final InternalResource r : incoming) {
+                if(r.getURL().equals(existing.getURL())) {
+                    // We have a resource r in "incoming" that's the same as "existing"
+                    if(r.getPrivateCopyOfFile() == null) {
+                        // New one has not data file, use the existing one
+                        logger.debug("{} has no private data file, using the one from {}", r.getURL(), existing.getURL());
+                        r.setPrivateCopyOfFile(existing.getPrivateCopyOfFile());
+                        existing.setPrivateCopyOfFile(null);
+                    } else if(r.getPrivateCopyOfFile().equals(existing.getPrivateCopyOfFile())) {
+                        logger.debug("{} has same private data file as existing resource, keeping it", r.getURL());
+                        existing.setPrivateCopyOfFile(null);
+                    }
+                    break;
+                }
+            }
+            
+            if(existing.getPrivateCopyOfFile() != null) {
+                logger.debug("Private data file not needed anymore, deleting it: {}", existing.getURL());
+                existing.getPrivateCopyOfFile().delete();
+            }
+        }
+    }
+    
     private void mergeNewlyRegisteredResources() {
         synchronized ( this.resourcesLock ) {
             for(final Map.Entry<String, List<InternalResource>> entry : this.newResourcesSchemes.entrySet()) {
@@ -751,6 +785,7 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
 
             final InstallationContext ctx = new InstallationContext() {
 
+                @SuppressWarnings("deprecation")
                 @Override
                 public void addTaskToNextCycle(final InstallTask t) {
                     logger.warn("Deprecated method addTaskToNextCycle was called. Task will be executed in this cycle instead: {}", t);
@@ -767,6 +802,7 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
                     }
                 }
 
+                @SuppressWarnings("deprecation")
                 @Override
                 public void addAsyncTask(final InstallTask t) {
                     if ( t.isAsynchronousTask() ) {
@@ -934,6 +970,33 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
         }
     }
 
+    private void checkSatisfied() {
+        synchronized ( this.resourcesLock ) {
+            if ( !this.satisfied ) {
+                this.satisfied = true;
+                if ( this.ctx.getProperty(PROP_REQUIRED_SERVICES) != null ) {
+                    final String[] reqs = this.ctx.getProperty(PROP_REQUIRED_SERVICES).split(",");
+                    this.satisfied = true;
+                    for(final String val : reqs) {
+                        if ( val.startsWith("resourcetransformer:") ) {
+                            final String name = val.substring(20);
+
+                            this.satisfied = this.transformerTracker.check(ResourceTransformer.NAME, name);
+
+                        } else if ( val.startsWith("installtaskfactory:") ) {
+                            final String name = val.substring(19);
+
+                            this.satisfied = this.factoryTracker.check(InstallTaskFactory.NAME, name);
+
+                        } else {
+                            logger.warn("Invalid requirements for installer: {}", val);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * @see org.apache.sling.installer.api.tasks.RetryHandler#scheduleRetry()
      */
@@ -943,6 +1006,7 @@ implements OsgiInstaller, ResourceChangeListener, RetryHandler, InfoProvider, Ru
         this.listener.start();
         synchronized ( this.resourcesLock ) {
             this.retryDuringTaskExecution = true;
+            this.checkSatisfied();
         }
         this.wakeUp();
     }

@@ -24,12 +24,13 @@
     org.apache.sling/org.apache.sling.event.dea/1.1.0
 
 [:repoinit]
-    create path (sling:Folder) /var
-    create path (sling:Folder) /var/eventing
     create service user sling-event
 
+    create path (sling:Folder) /var
+    create path (sling:Folder) /var/eventing
+
     set ACL for sling-event
-        allow   jcr:all    on /var/eventing
+        allow   jcr:read,rep:write    on /var/eventing
     end
 
 

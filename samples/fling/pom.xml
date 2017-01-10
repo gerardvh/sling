@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.apache.sling</groupId>
     <artifactId>sling</artifactId>
-    <version>26</version>
+    <version>29</version>
     <relativePath/>
   </parent>
 
@@ -47,26 +47,17 @@
     <dependency>
       <groupId>javax.jcr</groupId>
       <artifactId>jcr</artifactId>
-      <version>2.0</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.1.0</version>
       <scope>provided</scope>
     </dependency>
     <!-- OSGi -->
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>osgi.core</artifactId>
-      <version>6.0.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>osgi.annotation</artifactId>
-      <version>6.0.1</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -181,8 +172,7 @@
             </Sling-Bundle-Resources>
             <Sling-Initial-Content>
               apps/fling;path:=/apps/fling;overwrite:=true;uninstall:=true,
-              content;path:=/content;overwrite:=true;uninstall:=true,
-              etc;path:=/etc;overwrite:=true;uninstall:=true
+              content;path:=/content;overwrite:=true;uninstall:=true
             </Sling-Initial-Content>
             <Sling-Model-Packages>
               org.apache.sling.samples.fling.page
@@ -202,7 +192,7 @@
         <artifactId>apache-rat-plugin</artifactId>
         <configuration>
           <excludes combine.children="append">
-            <exclude>**/etc/messaging/form/comment.txt</exclude>
+            <exclude>**/apps/fling/messaging/form/comment.txt</exclude>
           </excludes>
         </configuration>
       </plugin>

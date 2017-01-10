@@ -49,6 +49,8 @@ import org.apache.sling.models.spi.ImplementationPicker;
 import org.apache.sling.resourcebuilder.api.ResourceBuilder;
 import org.apache.sling.resourcebuilder.api.ResourceBuilderFactory;
 import org.apache.sling.resourcebuilder.impl.ResourceBuilderFactoryService;
+import org.apache.sling.scripting.core.impl.BindingsValuesProvidersByContextImpl;
+import org.apache.sling.scripting.core.impl.ScriptEngineManagerFactory;
 import org.apache.sling.settings.SlingSettingsService;
 import org.apache.sling.testing.mock.osgi.context.OsgiContextImpl;
 import org.apache.sling.testing.mock.sling.MockSling;
@@ -94,6 +96,7 @@ public class SlingContextImpl extends OsgiContextImpl {
     protected MockSlingHttpServletResponse response;
     protected SlingScriptHelper slingScriptHelper;
     protected ContentLoader contentLoader;
+    protected ContentLoader contentLoaderAutoCommit;
     protected ContentBuilder contentBuilder;
     protected ResourceBuilder resourceBuilder;
     protected UniqueRoot uniqueRoot;
@@ -156,6 +159,10 @@ public class SlingContextImpl extends OsgiContextImpl {
      */
     protected void registerDefaultServices() {
 
+        // scripting services (required by sling models impl since 1.3.6)
+        registerInjectActivateService(new ScriptEngineManagerFactory());
+        registerInjectActivateService(new BindingsValuesProvidersByContextImpl());
+        
         // adapter factories
         registerInjectActivateService(new ModelAdapterFactory());
 
@@ -176,6 +183,9 @@ public class SlingContextImpl extends OsgiContextImpl {
         registerService(SlingSettingsService.class, new MockSlingSettingService(DEFAULT_RUN_MODES));
         registerService(MimeTypeService.class, new MockMimeTypeService());
         registerInjectActivateService(new ResourceBuilderFactoryService());
+        
+        // scan for models defined via bundle headers in classpath
+        ModelAdapterFactoryUtil.addModelsForManifestEntries(this.bundleContext());
     }
 
     /**
@@ -212,6 +222,7 @@ public class SlingContextImpl extends OsgiContextImpl {
         this.response = null;
         this.slingScriptHelper = null;
         this.contentLoader = null;
+        this.contentLoaderAutoCommit = null;
         this.contentBuilder = null;
         this.resourceBuilder = null;
         this.uniqueRoot = null;
@@ -291,10 +302,26 @@ public class SlingContextImpl extends OsgiContextImpl {
      * @return Content loader
      */
     public ContentLoader load() {
-        if (this.contentLoader == null) {
-            this.contentLoader = new ContentLoader(resourceResolver(), bundleContext());
+        return load(true);
+    }
+
+    /**
+     * @param autoCommit Automatically commit changes after loading content (default: true)
+     * @return Content loader
+     */
+    public ContentLoader load(boolean autoCommit) {
+        if (autoCommit) {
+            if (this.contentLoaderAutoCommit == null) {
+                this.contentLoaderAutoCommit = new ContentLoader(resourceResolver(), bundleContext(), true);
+            }
+            return this.contentLoaderAutoCommit;
         }
-        return this.contentLoader;
+        else {
+            if (this.contentLoader == null) {
+                this.contentLoader = new ContentLoader(resourceResolver(), bundleContext(), false);
+            }
+            return this.contentLoader;
+        }
     }
 
     /**
@@ -358,12 +385,37 @@ public class SlingContextImpl extends OsgiContextImpl {
     }
 
     /**
-     * Scan classpaths for given package name (and sub packages) to scan for and
+     * Search classpath for given java package names (and sub packages) to scan for and
      * register all classes with @Model annotation.
      * @param packageName Java package name
      */
     public final void addModelsForPackage(String packageName) {
-        ModelAdapterFactoryUtil.addModelsForPackage(packageName, bundleContext());
+        ModelAdapterFactoryUtil.addModelsForPackages(bundleContext(),  packageName);
+    }
+
+    /**
+     * Search classpath for given java package names (and sub packages) to scan for and
+     * register all classes with @Model annotation.
+     * @param packageNames Java package names
+     */
+    public final void addModelsForPackage(String... packageNames) {
+        ModelAdapterFactoryUtil.addModelsForPackages(bundleContext(), packageNames);
+    }
+
+    /**
+     * Search classpath for given class names to scan for and register all classes with @Model annotation.
+     * @param classNames Java class names
+     */
+    public final void addModelsForClasses(String... classNames) {
+        ModelAdapterFactoryUtil.addModelsForClasses(bundleContext(), classNames);
+    }
+
+    /**
+     * Search classpath for given class names to scan for and register all classes with @Model annotation.
+     * @param classes Java classes
+     */
+    public final void addModelsForClasses(Class... classes) {
+        ModelAdapterFactoryUtil.addModelsForClasses(bundleContext(), classes);
     }
 
     /**

@@ -46,6 +46,7 @@ import org.apache.sling.distribution.event.impl.DistributionEventFactory;
 import org.apache.sling.distribution.log.impl.DefaultDistributionLog;
 import org.apache.sling.distribution.monitor.impl.ForwardDistributionAgentMBean;
 import org.apache.sling.distribution.monitor.impl.ForwardDistributionAgentMBeanImpl;
+import org.apache.sling.distribution.monitor.impl.MonitoringDistributionQueueProvider;
 import org.apache.sling.distribution.packaging.DistributionPackageBuilder;
 import org.apache.sling.distribution.packaging.DistributionPackageExporter;
 import org.apache.sling.distribution.packaging.DistributionPackageImporter;
@@ -225,7 +226,7 @@ public class ForwardDistributionAgentFactory extends AbstractDistributionAgentFa
 
     @Override
     protected SimpleDistributionAgent createAgent(String agentName, BundleContext context, Map<String, Object> config, DefaultDistributionLog distributionLog) {
-        String serviceName = PropertiesUtil.toString(config.get(SERVICE_NAME), null);
+        String serviceName = SettingsUtils.removeEmptyEntry(PropertiesUtil.toString(config.get(SERVICE_NAME), null));
         String[] allowedRoots = PropertiesUtil.toStringArray(config.get(ALLOWED_ROOTS), null);
         allowedRoots = SettingsUtils.removeEmptyEntries(allowedRoots);
 
@@ -248,6 +249,7 @@ public class ForwardDistributionAgentFactory extends AbstractDistributionAgentFa
         } else {
             queueProvider = new SimpleDistributionQueueProvider(scheduler, agentName, true);
         }
+        queueProvider = new MonitoringDistributionQueueProvider(queueProvider, context);
 
         DistributionQueueDispatchingStrategy exportQueueStrategy;
         DistributionQueueDispatchingStrategy errorQueueStrategy = null;

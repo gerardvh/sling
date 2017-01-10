@@ -19,5 +19,5 @@
 /**
  * OSGI testing tools.
  */
-@aQute.bnd.annotation.Version("1.0.0")
+@aQute.bnd.annotation.Version("1.1.0")
 package org.apache.sling.testing.clients.osgi;

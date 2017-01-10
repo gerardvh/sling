@@ -24,11 +24,11 @@
         <groupId>org.apache.sling</groupId>
         <artifactId>sling</artifactId>
         <version>29</version>
-        <relativePath/>
+        <relativePath />
     </parent>
 
     <artifactId>org.apache.sling.commons.fsclassloader</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.5-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>Apache Sling Commons FileSystem ClassLoader</name>
